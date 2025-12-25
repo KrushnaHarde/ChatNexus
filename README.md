@@ -58,10 +58,10 @@ A real-time 1-to-1 chat application built with Spring Boot and WebSocket technol
 
 ```
 ┌─────────────────┐     WebSocket/STOMP     ┌─────────────────┐
-│                 │◄──────────────────────►│                 │
+│                 │◄──────────────────────► │                 │
 │   Web Client    │                         │  Spring Boot    │
 │   (Browser)     │     REST API            │    Server       │
-│                 │◄──────────────────────►│                 │
+│                 │◄──────────────────────► │                 │
 └─────────────────┘                         └────────┬────────┘
                                                      │
                                                      │ Spring Data
