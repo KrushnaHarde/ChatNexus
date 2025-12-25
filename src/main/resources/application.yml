@@ -1,0 +1,12 @@
+spring:
+  data:
+    mongodb:
+      username: krushna
+      password: krushna
+      host: localhost
+      port: 27017
+      database: ChatNexus
+      authentication-database: admin
+
+server:
+  port: 8080

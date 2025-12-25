@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="css/main.css">
+    <title>ChatNexus</title>
+</head>
+<body>
+
+<div class="app-header">
+    <div class="logo">
+        <i class="fas fa-comments"></i>
+        <span>ChatNexus</span>
+    </div>
+    <p class="tagline">Real-time messaging powered by WebSocket</p>
+</div>
+
+<div class="user-form" id="username-page">
+    <div class="form-header">
+        <i class="fas fa-user-circle"></i>
+        <h2>Welcome Back</h2>
+        <p>Enter your details to join the chat</p>
+    </div>
+    <form id="usernameForm">
+        <div class="input-group">
+            <label for="nickname">
+                <i class="fas fa-at"></i> Nickname
+            </label>
+            <input type="text" id="nickname" name="nickname" placeholder="Enter your nickname" required>
+        </div>
+
+        <div class="input-group">
+            <label for="fullname">
+                <i class="fas fa-user"></i> Full Name
+            </label>
+            <input type="text" id="fullname" name="realname" placeholder="Enter your full name" required>
+        </div>
+
+        <button type="submit" class="btn-primary">
+            <i class="fas fa-sign-in-alt"></i> Enter Chatroom
+        </button>
+    </form>
+</div>
+
+<div class="chat-container hidden" id="chat-page">
+    <div class="users-list">
+        <div class="users-list-header">
+            <h2><i class="fas fa-users"></i> Online</h2>
+        </div>
+        <div class="users-list-container">
+            <ul id="connectedUsers">
+            </ul>
+        </div>
+        <div class="user-profile">
+            <div class="profile-info">
+                <div class="profile-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <p id="connected-user-fullname"></p>
+            </div>
+            <a class="logout" href="javascript:void(0)" id="logout" title="Logout">
+                <i class="fas fa-sign-out-alt"></i>
+            </a>
+        </div>
+    </div>
+
+    <div class="chat-area">
+        <div class="chat-header">
+            <span id="chat-with">Select a user to start chatting</span>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+        </div>
+
+        <form id="messageForm" name="messageForm" class="hidden">
+            <div class="message-input">
+                <input autocomplete="off" type="text" id="message" placeholder="Type your message...">
+                <button type="submit">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.1.4/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+<script src="/js/main.js"></script>
+</body>
+</html>
