@@ -20,5 +20,7 @@ public class ChatMessage {
     private String recipientId;
     private String content;
     private Date timeStamp;
-
+    private Date readTimestamp;
+    @Builder.Default
+    private MessageStatus status = MessageStatus.SENT;
 }

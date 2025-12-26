@@ -20,31 +20,77 @@
     <p class="tagline">Real-time messaging powered by WebSocket</p>
 </div>
 
-<div class="user-form" id="username-page">
+<!-- Auth Page - Login/Register -->
+<div class="user-form" id="auth-page">
     <div class="form-header">
         <i class="fas fa-user-circle"></i>
-        <h2>Welcome Back</h2>
-        <p>Enter your details to join the chat</p>
+        <h2 id="auth-title">Welcome Back</h2>
+        <p id="auth-subtitle">Sign in to continue</p>
     </div>
-    <form id="usernameForm">
+
+    <!-- Login Form -->
+    <form id="loginForm" onsubmit="return false;">
         <div class="input-group">
-            <label for="nickname">
-                <i class="fas fa-at"></i> Nickname
+            <label for="login-username">
+                <i class="fas fa-at"></i> Username
             </label>
-            <input type="text" id="nickname" name="nickname" placeholder="Enter your nickname" required>
+            <input type="text" id="login-username" name="username" placeholder="Enter your username" required>
         </div>
 
         <div class="input-group">
-            <label for="fullname">
-                <i class="fas fa-user"></i> Full Name
+            <label for="login-password">
+                <i class="fas fa-lock"></i> Password
             </label>
-            <input type="text" id="fullname" name="realname" placeholder="Enter your full name" required>
+            <input type="password" id="login-password" name="password" placeholder="Enter your password" required>
         </div>
 
-        <button type="submit" class="btn-primary">
-            <i class="fas fa-sign-in-alt"></i> Enter Chatroom
+        <div id="login-error" class="error-message hidden"></div>
+
+        <button type="submit" class="btn-primary" id="login-btn">
+            <i class="fas fa-sign-in-alt"></i> Sign In
         </button>
     </form>
+
+    <!-- Register Form (hidden by default) -->
+    <form id="registerForm" class="hidden" onsubmit="return false;">
+        <div class="input-group">
+            <label for="register-username">
+                <i class="fas fa-at"></i> Username
+            </label>
+            <input type="text" id="register-username" name="username" placeholder="Choose a username" required minlength="3" maxlength="20">
+        </div>
+
+        <div class="input-group">
+            <label for="register-fullname">
+                <i class="fas fa-user"></i> Full Name
+            </label>
+            <input type="text" id="register-fullname" name="fullname" placeholder="Enter your full name" required>
+        </div>
+
+        <div class="input-group">
+            <label for="register-password">
+                <i class="fas fa-lock"></i> Password
+            </label>
+            <input type="password" id="register-password" name="password" placeholder="Create a password" required minlength="6">
+        </div>
+
+        <div class="input-group">
+            <label for="register-confirm-password">
+                <i class="fas fa-lock"></i> Confirm Password
+            </label>
+            <input type="password" id="register-confirm-password" name="confirmPassword" placeholder="Confirm your password" required>
+        </div>
+
+        <div id="register-error" class="error-message hidden"></div>
+
+        <button type="submit" class="btn-primary" id="register-btn">
+            <i class="fas fa-user-plus"></i> Create Account
+        </button>
+    </form>
+
+    <div class="auth-toggle">
+        <p id="toggle-text">Don't have an account? <a href="#" id="toggle-auth">Register</a></p>
+    </div>
 </div>
 
 <div class="chat-container hidden" id="chat-page">
@@ -76,7 +122,7 @@
         <div class="chat-messages" id="chat-messages">
         </div>
 
-        <form id="messageForm" name="messageForm" class="hidden">
+        <form id="messageForm" name="messageForm" class="hidden" onsubmit="return false;">
             <div class="message-input">
                 <input autocomplete="off" type="text" id="message" placeholder="Type your message...">
                 <button type="submit">
@@ -89,6 +135,6 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.1.4/sockjs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
-<script src="/js/main.js"></script>
+<script src="js/main.js"></script>
 </body>
 </html>
