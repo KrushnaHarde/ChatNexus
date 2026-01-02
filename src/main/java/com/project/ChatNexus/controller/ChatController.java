@@ -44,6 +44,11 @@ public class ChatController {
                             .content(savedMsg.getContent())
                             .status(MessageStatus.DELIVERED)
                             .timestamp(savedMsg.getTimeStamp())
+                            .messageType(savedMsg.getMessageType())
+                            .mediaUrl(savedMsg.getMediaUrl())
+                            .fileName(savedMsg.getFileName())
+                            .fileSize(savedMsg.getFileSize())
+                            .mimeType(savedMsg.getMimeType())
                             .build()
             );
 

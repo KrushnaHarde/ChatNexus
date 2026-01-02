@@ -1,8 +1,8 @@
 spring:
   data:
     mongodb:
-      uri: ${ MONGO_URI :mongodb://localhost:27017 }
-      database: ${ MONGO_DATABASE :chat_nexus }
+      uri: ${ MONGO_URI:mongodb://localhost:27017/chat_nexus }
+      database: ${ MONGO_DATABASE:chat_nexus }
 
 server:
   port: ${PORT:8080}

@@ -17,6 +17,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const userSearchInput = document.querySelector('#userSearch');
     const searchResultsDiv = document.querySelector('#searchResults');
 
+    // File upload elements
+    const fileInput = document.querySelector('#fileInput');
+    const attachBtn = document.querySelector('#attachBtn');
+    const filePreview = document.querySelector('#filePreview');
+    const filePreviewName = document.querySelector('#filePreviewName');
+    const cancelFileBtn = document.querySelector('#cancelFile');
+    const uploadProgress = document.querySelector('#uploadProgress');
+    const progressFill = document.querySelector('.progress-fill');
+
     let stompClient = null;
     let username = null;
     let fullname = null;
@@ -24,6 +33,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let selectedUserId = null;
     let isLoginMode = true;
     let searchTimeout = null;
+    let selectedFile = null; // Store the selected file for upload
 
     // Store message elements by ID for status updates
     let messageElements = {};
@@ -672,7 +682,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function displayMessage(senderId, content, status = 'DELIVERED', messageId = null, timestamp = null, readTimestamp = null) {
+    function displayMessage(senderId, content, status = 'DELIVERED', messageId = null, timestamp = null, readTimestamp = null, messageType = 'TEXT', mediaUrl = null, fileName = null) {
         const messageContainer = document.createElement('div');
         messageContainer.classList.add('message');
 
@@ -691,9 +701,75 @@ document.addEventListener('DOMContentLoaded', function() {
             messageContainer.classList.add('receiver');
         }
 
-        const message = document.createElement('p');
-        message.textContent = content;
-        messageContainer.appendChild(message);
+        // Handle different message types
+        if (messageType === 'IMAGE' && mediaUrl) {
+            const mediaDiv = document.createElement('div');
+            mediaDiv.classList.add('media-message');
+
+            const img = document.createElement('img');
+            img.src = mediaUrl;
+            img.alt = fileName || 'Image';
+            img.loading = 'lazy';
+            img.onclick = () => openLightbox(mediaUrl);
+            mediaDiv.appendChild(img);
+
+            if (content) {
+                const caption = document.createElement('p');
+                caption.classList.add('media-caption');
+                caption.textContent = content;
+                mediaDiv.appendChild(caption);
+            }
+
+            messageContainer.appendChild(mediaDiv);
+        } else if (messageType === 'VIDEO' && mediaUrl) {
+            const mediaDiv = document.createElement('div');
+            mediaDiv.classList.add('media-message');
+
+            const video = document.createElement('video');
+            video.src = mediaUrl;
+            video.controls = true;
+            video.preload = 'metadata';
+            mediaDiv.appendChild(video);
+
+            if (content) {
+                const caption = document.createElement('p');
+                caption.classList.add('media-caption');
+                caption.textContent = content;
+                mediaDiv.appendChild(caption);
+            }
+
+            messageContainer.appendChild(mediaDiv);
+        } else if (messageType === 'AUDIO' && mediaUrl) {
+            const mediaDiv = document.createElement('div');
+            mediaDiv.classList.add('media-message');
+
+            const audio = document.createElement('audio');
+            audio.src = mediaUrl;
+            audio.controls = true;
+            audio.preload = 'metadata';
+            mediaDiv.appendChild(audio);
+
+            if (fileName) {
+                const fileInfo = document.createElement('div');
+                fileInfo.classList.add('file-info');
+                fileInfo.innerHTML = `<i class="fas fa-music"></i><span class="file-name">${fileName}</span>`;
+                mediaDiv.appendChild(fileInfo);
+            }
+
+            if (content) {
+                const caption = document.createElement('p');
+                caption.classList.add('media-caption');
+                caption.textContent = content;
+                mediaDiv.appendChild(caption);
+            }
+
+            messageContainer.appendChild(mediaDiv);
+        } else {
+            // Regular text message
+            const message = document.createElement('p');
+            message.textContent = content;
+            messageContainer.appendChild(message);
+        }
 
         // Add status indicator for sent messages
         if (senderId === username) {
@@ -733,6 +809,22 @@ document.addEventListener('DOMContentLoaded', function() {
         return messageContainer;
     }
 
+    // Open image in lightbox
+    function openLightbox(imageUrl) {
+        const lightbox = document.createElement('div');
+        lightbox.classList.add('lightbox');
+        lightbox.innerHTML = `
+            <span class="lightbox-close"><i class="fas fa-times"></i></span>
+            <img src="${imageUrl}" alt="Full size image">
+        `;
+        lightbox.onclick = (e) => {
+            if (e.target === lightbox || e.target.closest('.lightbox-close')) {
+                lightbox.remove();
+            }
+        };
+        document.body.appendChild(lightbox);
+    }
+
     // Send read notification via WebSocket
     function sendReadNotification(senderId) {
         if (stompClient && stompClient.connected) {
@@ -757,7 +849,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
             let hasUnreadMessages = false;
             userChat.forEach(chat => {
-                displayMessage(chat.senderId, chat.content, chat.status, chat.id, chat.timeStamp, chat.readTimestamp);
+                displayMessage(
+                    chat.senderId,
+                    chat.content,
+                    chat.status,
+                    chat.id,
+                    chat.timeStamp,
+                    chat.readTimestamp,
+                    chat.messageType || 'TEXT',
+                    chat.mediaUrl,
+                    chat.fileName
+                );
                 // Check if there are unread messages from the selected user
                 if (chat.senderId === selectedUserId && chat.status !== 'READ') {
                     hasUnreadMessages = true;
@@ -775,9 +877,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function sendMessage(event) {
+    async function sendMessage(event) {
         event.preventDefault();
         const messageContent = messageInput.value.trim();
+
+        // If there's a file selected, upload it first
+        if (selectedFile) {
+            await sendMediaMessage(messageContent);
+            return;
+        }
+
+        // Send regular text message
         if (messageContent && stompClient && selectedUserId) {
             const tempId = 'temp-' + Date.now();
             const now = new Date();
@@ -785,11 +895,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 senderId: username,
                 recipientId: selectedUserId,
                 content: messageContent,
-                timestamp: now
+                timestamp: now,
+                messageType: 'TEXT'
             };
 
             // Display message with SENT status initially
-            const msgElement = displayMessage(username, messageContent, 'SENT', tempId, now.toISOString(), null);
+            const msgElement = displayMessage(username, messageContent, 'SENT', tempId, now.toISOString(), null, 'TEXT', null, null);
             messageElements[tempId] = msgElement;
 
             stompClient.send("/app/chat", {}, JSON.stringify(chatMessage));
@@ -839,7 +950,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // If the message is from the currently selected user, display it and mark as read
         if (selectedUserId && selectedUserId === message.senderId) {
-            displayMessage(message.senderId, message.content, 'DELIVERED', message.id, message.timestamp, null);
+            displayMessage(
+                message.senderId,
+                message.content,
+                'DELIVERED',
+                message.id,
+                message.timestamp,
+                null,
+                message.messageType || 'TEXT',
+                message.mediaUrl,
+                message.fileName
+            );
             chatArea.scrollTop = chatArea.scrollHeight;
 
             // Send read notification immediately since the chat is open
@@ -899,6 +1020,163 @@ document.addEventListener('DOMContentLoaded', function() {
     // Message form submission
     if (messageForm) {
         messageForm.addEventListener('submit', sendMessage);
+    }
+
+    // File attachment functionality
+    if (attachBtn && fileInput) {
+        attachBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                // Validate file size (50MB max)
+                if (file.size > 50 * 1024 * 1024) {
+                    alert('File size exceeds 50MB limit');
+                    fileInput.value = '';
+                    return;
+                }
+
+                selectedFile = file;
+                filePreviewName.textContent = file.name;
+                filePreview.classList.remove('hidden');
+            }
+        });
+    }
+
+    if (cancelFileBtn) {
+        cancelFileBtn.addEventListener('click', () => {
+            selectedFile = null;
+            fileInput.value = '';
+            filePreview.classList.add('hidden');
+            uploadProgress.classList.add('hidden');
+            progressFill.style.width = '0%';
+        });
+    }
+
+    // Send media message
+    async function sendMediaMessage(caption) {
+        if (!selectedFile || !stompClient || !selectedUserId) return;
+
+        try {
+            // Show upload progress
+            uploadProgress.classList.remove('hidden');
+            progressFill.style.width = '10%';
+
+            // Show uploading indicator in chat
+            const uploadingDiv = document.createElement('div');
+            uploadingDiv.classList.add('message', 'sender');
+            uploadingDiv.innerHTML = `
+                <div class="uploading-indicator">
+                    <i class="fas fa-spinner"></i>
+                    <span>Uploading ${selectedFile.name}...</span>
+                </div>
+            `;
+            chatArea.appendChild(uploadingDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
+
+            // Upload to Cloudinary via backend
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            progressFill.style.width = '30%';
+
+            const response = await fetch('/api/media/upload', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            progressFill.style.width = '70%';
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Upload failed');
+            }
+
+            const uploadResult = await response.json();
+            progressFill.style.width = '90%';
+
+            // Remove uploading indicator
+            uploadingDiv.remove();
+
+            // Send message with media URL via WebSocket
+            const tempId = 'temp-' + Date.now();
+            const now = new Date();
+            const chatMessage = {
+                senderId: username,
+                recipientId: selectedUserId,
+                content: caption || '',
+                timestamp: now,
+                messageType: uploadResult.messageType,
+                mediaUrl: uploadResult.url,
+                mediaPublicId: uploadResult.publicId,
+                fileName: uploadResult.fileName,
+                fileSize: uploadResult.fileSize,
+                mimeType: uploadResult.mimeType
+            };
+
+            // Display the message locally
+            const msgElement = displayMessage(
+                username,
+                caption || '',
+                'SENT',
+                tempId,
+                now.toISOString(),
+                null,
+                uploadResult.messageType,
+                uploadResult.url,
+                uploadResult.fileName
+            );
+            messageElements[tempId] = msgElement;
+
+            // Send via WebSocket
+            stompClient.send("/app/chat", {}, JSON.stringify(chatMessage));
+
+            progressFill.style.width = '100%';
+
+            // Clear file selection
+            selectedFile = null;
+            fileInput.value = '';
+            messageInput.value = '';
+            filePreview.classList.add('hidden');
+
+            setTimeout(() => {
+                uploadProgress.classList.add('hidden');
+                progressFill.style.width = '0%';
+            }, 500);
+
+            chatArea.scrollTop = chatArea.scrollHeight;
+
+            // Refresh contacts list
+            setTimeout(() => {
+                findAndDisplayConnectedUsers().then(() => {
+                    if (selectedUserId) {
+                        const selectedUser = document.querySelector(`#user-${CSS.escape(selectedUserId)}`);
+                        if (selectedUser) {
+                            selectedUser.classList.add('active');
+                        }
+                    }
+                });
+            }, 500);
+
+        } catch (error) {
+            console.error('Error uploading media:', error);
+            alert('Failed to upload file: ' + error.message);
+
+            // Remove uploading indicator if exists
+            const uploadingIndicator = chatArea.querySelector('.uploading-indicator');
+            if (uploadingIndicator) {
+                uploadingIndicator.closest('.message').remove();
+            }
+
+            // Reset progress
+            uploadProgress.classList.add('hidden');
+            progressFill.style.width = '0%';
+        }
     }
 
     // Handle page unload - notify server that user is going offline

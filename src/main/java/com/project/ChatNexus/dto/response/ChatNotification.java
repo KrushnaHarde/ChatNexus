@@ -1,6 +1,7 @@
 package com.project.ChatNexus.dto.response;
 
 import com.project.ChatNexus.model.MessageStatus;
+import com.project.ChatNexus.model.MessageType;
 import lombok.*;
 
 import java.util.Date;
@@ -18,5 +19,13 @@ public class ChatNotification {
     private MessageStatus status;
     private Date timestamp;
     private Date readTimestamp;
+
+    // Media fields
+    @Builder.Default
+    private MessageType messageType = MessageType.TEXT;
+    private String mediaUrl;
+    private String fileName;
+    private Long fileSize;
+    private String mimeType;
 }
 

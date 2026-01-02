@@ -23,5 +23,14 @@ public class ChatMessage {
     private Date readTimestamp;
     @Builder.Default
     private MessageStatus status = MessageStatus.SENT;
+
+    // Media fields
+    @Builder.Default
+    private MessageType messageType = MessageType.TEXT;
+    private String mediaUrl;
+    private String mediaPublicId;
+    private String fileName;
+    private Long fileSize;
+    private String mimeType;
 }
 
