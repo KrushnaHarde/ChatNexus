@@ -1,4 +1,4 @@
-# ChatNexus v3.0 💬
+# ChatNexus v3.1 💬
 
 A real-time 1-to-1 chat application built with Spring Boot and WebSocket technology, featuring **media sharing** with Cloudinary integration.
 
@@ -42,7 +42,7 @@ A real-time 1-to-1 chat application built with Spring Boot and WebSocket technol
 - **JWT Authentication**: Secure user authentication with JSON Web Tokens
 - **Offline Messaging**: Send messages to offline users - they'll receive them when they come online
 
-## 🆕 What's New in v3.0
+## 🆕 What's New in v3.1
 
 ### 📸 Media Sharing (Cloudinary Integration)
 - **Image Sharing**: Share images (JPG, PNG, GIF, WebP, BMP) up to 50MB
