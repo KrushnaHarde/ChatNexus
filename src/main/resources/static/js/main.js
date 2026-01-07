@@ -1,5 +1,23 @@
 'use strict';
 
+// ===========================
+// API Configuration
+// ===========================
+// Determine API base URL based on environment
+const API_BASE_URL = (() => {
+    // If running on localhost or 127.0.0.1, use local backend
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return 'http://localhost:8080';
+    }
+    // For production (Vercel frontend + Render backend)
+    return 'https://chatnexus-backend.onrender.com';
+})();
+
+// Helper function to build API URLs
+function buildApiUrl(endpoint) {
+    return `${API_BASE_URL}${endpoint}`;
+}
+
 // Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
     const authPage = document.querySelector('#auth-page');
@@ -89,7 +107,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const errorDiv = document.querySelector('#login-error');
 
             try {
-                const response = await fetch('/api/auth/login', {
+                const response = await fetch(buildApiUrl('/api/auth/login'), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -140,7 +158,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             try {
-                const response = await fetch('/api/auth/register', {
+                const response = await fetch(buildApiUrl('/api/auth/register'), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -181,7 +199,8 @@ document.addEventListener('DOMContentLoaded', function() {
         authPage.classList.add('hidden');
         chatPage.classList.remove('hidden');
 
-        const socket = new SockJS('/ws');
+        const wsUrl = buildApiUrl('/ws');
+        const socket = new SockJS(wsUrl);
         stompClient = Stomp.over(socket);
         stompClient.debug = null; // Disable debug logs
 
@@ -230,7 +249,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function searchUsers(query) {
         try {
-            const response = await fetch(`/users/search?query=${encodeURIComponent(query)}`, {
+            const response = await fetch(buildApiUrl(`/users/search?query=${encodeURIComponent(query)}`), {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -468,7 +487,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function fetchUndeliveredMessages() {
         try {
-            const response = await fetch(`/messages/undelivered/${username}`, {
+            const response = await fetch(buildApiUrl(`/messages/undelivered/${username}`), {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -519,7 +538,7 @@ document.addEventListener('DOMContentLoaded', function() {
     async function findAndDisplayConnectedUsers() {
         try {
             // Fetch chat contacts (previous conversations) instead of online users
-            const contactsResponse = await fetch(`/contacts/${username}`, {
+            const contactsResponse = await fetch(buildApiUrl(`/contacts/${username}`), {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -837,7 +856,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function fetchAndDisplayUserChat() {
         try {
-            const userChatResponse = await fetch(`/messages/${username}/${selectedUserId}`, {
+            const userChatResponse = await fetch(buildApiUrl(`/messages/${username}/${selectedUserId}`), {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -1082,7 +1101,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             progressFill.style.width = '30%';
 
-            const response = await fetch('/api/media/upload', {
+            const response = await fetch(buildApiUrl('/api/media/upload'), {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`

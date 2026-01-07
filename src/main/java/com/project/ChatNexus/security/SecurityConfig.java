@@ -20,7 +20,6 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
-import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -63,12 +62,27 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
+        // Allow all specified origins
         configuration.setAllowedOrigins(
-                Arrays.asList("http://localhost:3000", "http://localhost:3001", "http://localhost:5173"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
+                Arrays.asList(
+                        "http://localhost:3000",
+                        "http://localhost:3001",
+                        "http://localhost:5173",
+                        "https://chat-nexus-frontend-two.vercel.app",
+                        "http://127.0.0.1:3000",
+                        "http://127.0.0.1:3001",
+                        "http://127.0.0.1:5173"
+                ));
+        // Allow all HTTP methods
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"));
+        // Allow all headers in request
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        // Allow credentials (cookies, auth headers)
         configuration.setAllowCredentials(true);
-        configuration.setExposedHeaders(Arrays.asList("Authorization"));
+        // Expose these headers to the client
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Total-Count"));
+        // Cache preflight requests for 1 hour
+        configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
